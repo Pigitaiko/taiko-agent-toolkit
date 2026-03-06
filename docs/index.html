@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiko Agent Toolkit - Onchain Infrastructure for the Agent Economy</title>
+  <meta name="description" content="Give your AI agents superpowers on Taiko. Session-scoped wallets, TaikoSwap integration, L1/L2 bridging, and onchain agent identity.">
+  <style>
+    :root {
+      --pink: #e81899;
+      --pink-dark: #c4147f;
+      --dark: #0b0b0f;
+      --darker: #06060a;
+      --card: #111118;
+      --card-border: #1e1e2a;
+      --text: #e4e4ed;
+      --text-muted: #8888a0;
+      --code-bg: #0d0d14;
+      --gradient: linear-gradient(135deg, #e81899 0%, #9b51e0 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--darker);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Nav */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      background: rgba(6, 6, 10, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .nav-logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-logo span { color: var(--pink); }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--gradient);
+      color: white;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover { border-color: var(--pink); }
+
+    /* Hero */
+    .hero {
+      padding: 10rem 2rem 6rem;
+      text-align: center;
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.35rem 1rem;
+      border-radius: 100px;
+      background: rgba(232, 24, 153, 0.1);
+      border: 1px solid rgba(232, 24, 153, 0.3);
+      color: var(--pink);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 .gradient-text {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .install-cmd {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 2rem;
+    }
+
+    .install-cmd code { color: var(--text); }
+
+    /* Glow effect */
+    .glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(232, 24, 153, 0.08) 0%, transparent 70%);
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    /* Features */
+    .features {
+      padding: 6rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .section-header h2 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(232, 24, 153, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(232, 24, 153, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      font-size: 1.4rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* Code example */
+    .code-section {
+      padding: 6rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .code-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--card-border);
+    }
+
+    .code-dot:nth-child(1) { background: #ff5f57; }
+    .code-dot:nth-child(2) { background: #febc2e; }
+    .code-dot:nth-child(3) { background: #28c840; }
+
+    .code-title {
+      margin-left: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .code-body {
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .code-body pre {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .code-body .kw { color: #c792ea; }
+    .code-body .fn { color: #82aaff; }
+    .code-body .str { color: #c3e88d; }
+    .code-body .cm { color: #546e7a; }
+    .code-body .num { color: #f78c6c; }
+    .code-body .type { color: #ffcb6b; }
+
+    /* Contracts table */
+    .contracts-section {
+      padding: 6rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .contracts-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .contracts-table th {
+      text-align: left;
+      padding: 1rem 1.5rem;
+      background: rgba(232, 24, 153, 0.05);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .contracts-table td {
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.9rem;
+    }
+
+    .contracts-table tr:last-child td { border-bottom: none; }
+
+    .contracts-table .addr {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--pink);
+    }
+
+    .contracts-table .label { font-weight: 600; }
+
+    /* Architecture */
+    .arch-section {
+      padding: 6rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .arch-diagram {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      overflow-x: auto;
+    }
+
+    .arch-diagram .highlight { color: var(--pink); font-weight: 600; }
+    .arch-diagram .muted { color: #444460; }
+
+    /* Networks */
+    .networks {
+      padding: 4rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .network-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .network-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .network-card h4 { font-size: 1rem; margin-bottom: 0.25rem; }
+
+    .network-card .chain-id {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .network-card .status {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.2rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-prod { background: rgba(40, 200, 64, 0.1); color: #28c840; }
+    .status-test { background: rgba(254, 188, 46, 0.1); color: #febc2e; }
+    .status-bridge { background: rgba(130, 170, 255, 0.1); color: #82aaff; }
+
+    /* Security */
+    .security-section {
+      padding: 6rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .security-item {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .security-item h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .security-item p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* CTA */
+    .cta {
+      padding: 8rem 2rem;
+      text-align: center;
+    }
+
+    .cta h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .cta p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    footer a { color: var(--pink); text-decoration: none; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      nav { padding: 1rem; }
+      .nav-links { display: none; }
+      .hero { padding: 8rem 1.5rem 4rem; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .network-grid { grid-template-columns: 1fr; }
+      .security-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <span>Taiko</span> Agent Toolkit
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#code">Quick Start</a></li>
+      <li><a href="#contracts">Contracts</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="https://github.com/Pigitaiko/taiko-agent-toolkit" class="btn btn-secondary">GitHub</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="glow"></div>
+    <div class="hero-badge">BUILT FOR THE AGENT ECONOMY</div>
+    <h1>
+      Onchain infrastructure for <span class="gradient-text">AI agents on Taiko</span>
+    </h1>
+    <p>
+      Session-scoped wallets, TaikoSwap integration, L1/L2 bridging, and onchain identity &mdash; everything your agent needs to operate onchain, in one SDK.
+    </p>
+    <div class="hero-buttons">
+      <a href="https://github.com/Pigitaiko/taiko-agent-toolkit" class="btn btn-primary">Get Started</a>
+      <a href="#features" class="btn btn-secondary">See Features</a>
+    </div>
+    <div class="install-cmd">
+      $ <code>npm install @taiko/agent-toolkit</code>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <h2>Everything agents need, nothing they don't</h2>
+      <p>A unified SDK replacing fragmented wallet libraries, swap APIs, bridge services, and identity systems.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">&#128274;</div>
+        <h3>Session-Scoped Wallets</h3>
+        <p>Create wallets that auto-expire and enforce spending limits. Private keys are AES-256 encrypted and never enter the agent's context window. Set contract allowlists to control what your agent can interact with.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128257;</div>
+        <h3>TaikoSwap Integration</h3>
+        <p>Swap any token through TaikoSwap, the native DEX on Taiko. Get quotes, set slippage tolerance, and execute swaps in a single function call. Built on verified UniswapV2 contracts.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128279;</div>
+        <h3>L1/L2 Bridging</h3>
+        <p>Bridge ETH between Ethereum and Taiko through the native bridge contracts. Estimate fees, track bridge status, and manage cross-chain operations programmatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128176;</div>
+        <h3>Token Operations</h3>
+        <p>Query native ETH and ERC-20 balances across chains. Transfer tokens with a single call. Supports all standard tokens on Taiko mainnet.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#129302;</div>
+        <h3>Onchain Agent Identity</h3>
+        <p>Register your agent onchain with metadata and capabilities. Build verifiable reputation through success/failure tracking. Discover other agents by owner or ID. Inspired by ERC-8004.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#9889;</div>
+        <h3>Chain Queries &amp; RPC</h3>
+        <p>Query blocks, gas prices, transactions, and read arbitrary smart contracts. Built on Taiko's dedicated RPC infrastructure with connection pooling.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code Example -->
+  <section class="code-section" id="code">
+    <div class="section-header">
+      <h2>Up and running in 5 lines</h2>
+      <p>Framework-agnostic TypeScript SDK. Works with Claude, LangChain, CrewAI, or any agent framework.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dot"></div>
+        <div class="code-dot"></div>
+        <div class="code-dot"></div>
+        <span class="code-title">agent.ts</span>
+      </div>
+      <div class="code-body">
+<pre><span class="kw">import</span> { <span class="type">TaikoAgentKit</span> } <span class="kw">from</span> <span class="str">"@taiko/agent-toolkit"</span>;
+
+<span class="cm">// Create a session with guardrails</span>
+<span class="kw">const</span> kit = <span class="type">TaikoAgentKit</span>.<span class="fn">create</span>({
+  chainId: <span class="num">167000</span>,
+  walletConfig: {
+    spendingLimitEth: <span class="str">"0.5"</span>,
+    ttlSeconds: <span class="num">3600</span>,
+  },
+});
+
+<span class="cm">// Check balance</span>
+<span class="kw">const</span> balance = <span class="kw">await</span> kit.<span class="fn">getBalance</span>();
+
+<span class="cm">// Swap ETH for TAIKO via TaikoSwap</span>
+<span class="kw">await</span> kit.<span class="fn">swap</span>({
+  fromToken: <span class="str">"ETH"</span>,
+  toToken: <span class="str">"TAIKO"</span>,
+  amount: <span class="str">"0.1"</span>,
+});
+
+<span class="cm">// Bridge to Ethereum L1</span>
+<span class="kw">await</span> kit.<span class="fn">bridge</span>({ amount: <span class="str">"0.5"</span>, toChain: <span class="num">1</span> });
+
+<span class="cm">// Register agent identity onchain</span>
+<span class="kw">await</span> kit.<span class="fn">registerAgent</span>({
+  name: <span class="str">"my-defi-agent"</span>,
+  capabilities: [<span class="str">"swap"</span>, <span class="str">"bridge"</span>, <span class="str">"monitor"</span>],
+});</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLI -->
+  <section class="code-section">
+    <div class="section-header">
+      <h2>Powerful CLI included</h2>
+      <p>Manage wallets, check balances, get swap quotes, and query chain state from your terminal.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dot"></div>
+        <div class="code-dot"></div>
+        <div class="code-dot"></div>
+        <span class="code-title">terminal</span>
+      </div>
+      <div class="code-body">
+<pre><span class="cm"># Initialize a new agent</span>
+$ taiko-agent init --name my-agent
+
+<span class="cm"># Create a session wallet</span>
+$ taiko-agent wallet create --limit 0.5 --chain 167000
+
+<span class="cm"># Get a swap quote from TaikoSwap</span>
+$ taiko-agent swap quote --from ETH --to TAIKO --amount 1.0
+  <span class="str">Swap Quote (TaikoSwap):
+    1.0 WETH -> ~223,501.73 TAIKO
+    Slippage: 0.5%
+    Router: 0xF078...4734</span>
+
+<span class="cm"># Query chain info</span>
+$ taiko-agent chain info
+  <span class="str">Chain: Taiko Mainnet
+    Chain ID: 167000
+    Block: 4,665,828
+    Gas price: 0.15 gwei</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Networks -->
+  <section class="networks">
+    <div class="section-header">
+      <h2>Supported Networks</h2>
+    </div>
+    <div class="network-grid">
+      <div class="network-card">
+        <h4>Taiko Mainnet</h4>
+        <div class="chain-id">Chain ID: 167000</div>
+        <div class="status status-prod">Production</div>
+      </div>
+      <div class="network-card">
+        <h4>Taiko Hoodi</h4>
+        <div class="chain-id">Chain ID: 167013</div>
+        <div class="status status-test">Testnet</div>
+      </div>
+      <div class="network-card">
+        <h4>Ethereum L1</h4>
+        <div class="chain-id">Chain ID: 1</div>
+        <div class="status status-bridge">Bridging</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contracts -->
+  <section class="contracts-section" id="contracts">
+    <div class="section-header">
+      <h2>Verified Contract Addresses</h2>
+      <p>All addresses verified on-chain against Taiko mainnet.</p>
+    </div>
+
+    <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted);">TaikoSwap (Native DEX)</h3>
+    <table class="contracts-table" style="margin-bottom: 2rem;">
+      <thead><tr><th>Contract</th><th>Address</th></tr></thead>
+      <tbody>
+        <tr><td class="label">Router</td><td class="addr">0xF078BD74C62a2F643fd9630ECBCfe1C3c28f4734</td></tr>
+        <tr><td class="label">Factory</td><td class="addr">0x278e9cbe8839a8b634bb214b58207be3743195ac</td></tr>
+        <tr><td class="label">TKOSWAP Token</td><td class="addr">0xED197058A19E3A7C0D1aC402AaADEf22a0f31D0b</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted);">Taiko L2 (Predeployed)</h3>
+    <table class="contracts-table" style="margin-bottom: 2rem;">
+      <thead><tr><th>Contract</th><th>Address</th></tr></thead>
+      <tbody>
+        <tr><td class="label">Bridge</td><td class="addr">0x1670000000000000000000000000000000000001</td></tr>
+        <tr><td class="label">ERC20Vault</td><td class="addr">0x1670000000000000000000000000000000000002</td></tr>
+        <tr><td class="label">SignalService</td><td class="addr">0x1670000000000000000000000000000000000005</td></tr>
+        <tr><td class="label">WETH</td><td class="addr">0xA51894664A773981C6C112C43ce576f315d5b1B6</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted);">Taiko L1 (Ethereum)</h3>
+    <table class="contracts-table">
+      <thead><tr><th>Contract</th><th>Address</th></tr></thead>
+      <tbody>
+        <tr><td class="label">Bridge</td><td class="addr">0xd60247c6848B7Ca29eDdF63AA924E53dB6Dde8EC</td></tr>
+        <tr><td class="label">TaikoToken</td><td class="addr">0x10dea67478c5F8C5E2D90e5E9B26dBe60c54d800</td></tr>
+        <tr><td class="label">TaikoInbox</td><td class="addr">0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a</td></tr>
+        <tr><td class="label">ERC20Vault</td><td class="addr">0x996282cA11E5DEb6B5D122CC3B9A1FcAAD4415Ab</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Security -->
+  <section class="security-section" id="security">
+    <div class="section-header">
+      <h2>Agent-First Security</h2>
+      <p>Designed for agent-specific threat models from day one.</p>
+    </div>
+    <div class="security-grid">
+      <div class="security-item">
+        <h4>&#128272; Encrypted Keys</h4>
+        <p>AES-256-CBC + PBKDF2 (100k iterations). Keys never enter the agent context.</p>
+      </div>
+      <div class="security-item">
+        <h4>&#128176; Spending Limits</h4>
+        <p>Configurable ETH caps per session. Transactions exceeding limits are rejected.</p>
+      </div>
+      <div class="security-item">
+        <h4>&#9200; Auto-Expiry</h4>
+        <p>Wallets have a TTL. Expired wallets cannot sign transactions.</p>
+      </div>
+      <div class="security-item">
+        <h4>&#128220; Contract Allowlists</h4>
+        <p>Restrict which contracts the agent can interact with. Block rogue calls.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="arch-section" id="architecture">
+    <div class="section-header">
+      <h2>Modular Architecture</h2>
+      <p>Framework-agnostic core with thin adapter layers.</p>
+    </div>
+    <div class="arch-diagram">
+<pre><span class="highlight">@taiko/agent-toolkit</span>             <span class="muted">// Core SDK + CLI</span>
+  |
+  +-- wallet/                      <span class="muted">// Session wallets + encryption</span>
+  +-- tokens/                      <span class="muted">// ERC-20 balances & transfers</span>
+  +-- swap/                        <span class="muted">// TaikoSwap (UniswapV2) integration</span>
+  +-- bridge/                      <span class="muted">// Taiko native bridge (L1 &lt;-&gt; L2)</span>
+  +-- identity/                    <span class="muted">// Onchain agent registry & reputation</span>
+  +-- rpc/                         <span class="muted">// Chain queries & contract reads</span>
+  +-- config/                      <span class="muted">// Verified chain configs & addresses</span>
+
+<span class="highlight">@taiko/agent-toolkit-langchain</span>    <span class="muted">// Thin adapter (coming soon)</span>
+<span class="highlight">@taiko/agent-toolkit-mcp</span>          <span class="muted">// Thin adapter (coming soon)</span></pre>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2>Start building on Taiko</h2>
+    <p>Give your agents the infrastructure they deserve.</p>
+    <div class="hero-buttons">
+      <a href="https://github.com/Pigitaiko/taiko-agent-toolkit" class="btn btn-primary">View on GitHub</a>
+      <a href="https://docs.taiko.xyz" class="btn btn-secondary">Taiko Docs</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>Built for the <a href="https://taiko.xyz">Taiko</a> ecosystem. Open source under MIT license.</p>
+  </footer>
+
+</body>
+</html>
